@@ -1,0 +1,273 @@
+%
+% $Id$ Write your student Ids here. 
+% For any help on latex see the SRI 2007 folder.
+%Please submit  this latex file by email to me 
+% after a week when the lecture was given. For example once 
+%3 lectures are done in a week each group assigned to take the
+%scribes notes that week will prepare it and submit it to me a week after.
+%A list of group will be made in the class.
+
+\documentclass[11pt]{article}
+
+\oddsidemargin  -0.0in
+\textwidth      6.5in
+\headheight     0.0in
+\topmargin      -0.25in
+\textheight     9.0in
+\parindent      0.0in
+\parskip        0.05in
+
+\usepackage{epsfig}
+\usepackage{listings}
+\usepackage[export]{adjustbox}
+\graphicspath{{Images/}}
+
+% ---------------------------------------------------------------------------
+
+%\lstset{
+ % basicstyle=\small,
+  %language=Pascal,
+  %boxpos=c,
+ % identifierstyle=,
+  %commentstyle=\color{white},
+  %stringstyle=\ttfamily,
+  %showstringspaces=false}
+
+%\newenvironment{itemize*}%
+ % {\begin{itemize}%
+  %  \setlength{\itemsep}{0.0in}%
+   % \setlength{\parskip}{0.0in}}%
+  %{\end{itemize}}
+
+\begin{document}
+
+% ---------------------------------------------------------------------------
+
+\begin{center}
+{\large IT468 Natural Computing Spring 2017} \\
+Prof. Manish K Gupta  \\
+DA-IICT\\
+\hspace{0.25in} \\
+{\Large\bf DNA Storage using Akhmetov Encoding} \\
+ 3rd May, 2017 \\
+Rushikesh Nalla 201401106 \\
+Omkar Damle 201401114
+\end{center}
+
+% ---------------------------------------------------------------------------
+
+\section{Introduction}
+
+Data is growing at an alarming rate and to keep up with it we need a better storage technology and this is where DNA comes into picture. DNA has extremely long half-life and unlike digital media it is not prone to degradation. Recently scientists were able to store 215 petabytes per gram of DNA. We have implemented the paper "A highly parallel strategy for storage of digital information in living cells" by Azat Akhmetov, Andrew D.Ellington and Edward M.Marcotte. This paper discussed a new encoding strategy which helps in detecting and correcting errors. We have coded in python and used Lempel Ziv Markov chain algorithm (LZMA) compression and edit-distance libraries.
+
+\section{Algorithm}
+
+\subsection{Compression}
+
+\begin{itemize}
+    \item Initially the input file is checked whether it is a text file or an image so that it can encoded accordingly and prepared for compression.
+    \item For a text file we have used utf-8 encoding and for images we used base64 encoding which outputs a byte object.
+    \item The resulting data is compressed using Lempel Ziv Markov chain algorithm (LZMA) compression algorithm.
+\end{itemize}
+
+\subsection{Codebook generation}
+
+\begin{itemize}
+    \item First all possible DNA sequences containing A,C,G,T of length 4 are created.
+    \item All sequences with high repetitiveness are removed.
+    \item All sequences with Levenshtein distance less than 3 are removed so as to allow recovery from upto one mutation (substitution) in each block (DNA sequence of length 4).
+    \item The above process is repeated until we get 8 codewords for our codebook.
+    \item As the process is random in nature we get a different codebook each time we generate it.
+\end{itemize}
+
+\subsection{Mapping and Storing}
+
+\begin{itemize}
+    \item The byte stream (base 256) after compression is then converted to base 8 because the number of codewords in the codebook are 8.
+    \item The base 8 string is then mapped with the generated codebook and we get the corresponding DNA sequence.
+    \item The DNA sequence is stored in a text file illustrating storage in cells. 
+\end{itemize}
+
+\subsection{Error Introduction and Correction}
+
+\begin{itemize}
+    \item A letter from A,C,G,T (replacing letter) is chosen randomly along with a random location (one in each block) where the error is introduced.
+    \item After the above step each block has a substitution error which needs to be corrected.
+    \item Each block is checked against the codewords in the codebook and their corresponding Levenshtein distance is stored.
+    \item The codeword with minimum distance is deemed correct and is replaced by that codeword.
+    \item The obtained DNA sequence would then be free from errors. 
+\end{itemize}
+
+\subsection{Mapping and Conversion}
+
+\begin{itemize}
+    \item The DNA sequence is read one block at a time and codebook is used to obtain the integer value corresponding to that block.
+    \item The integer sequence is in base 8 and is converted back to byte stream (base 256).
+\end{itemize}
+
+\subsection{Decompression}
+
+\begin{itemize}
+    \item The data (byte stream) is decompressed using LZMA compression algorithm.
+    \item Depending on whether the input was a text file or an image it has to be decoded accordingly.
+    \item For text file it is decoded using utf-8 and for images using base64.
+\end{itemize}
+
+\section{Example}
+
+We have tested our code with text files of varying sizes and also images in different formats like jpg, png etc. As an example we will use a text file named example.txt containing the word DAIICT and look at the working of the code and output at each step.
+
+\subsection{Compression}
+
+As the input is a text file it is encoded using utf-8. It returns a byte object. \\ \\
+\textbf{Output:} b'DAIICT'
+\\ \\
+The byte object is compressed using LZMA compression algorithm and stored in example.txt.xz file. The contents of the file are: \\ \\
+\textbf{Output:} b'\textbackslash xfd7zXZ\textbackslash x00\textbackslash x00\textbackslash x04\textbackslash xe6\textbackslash xd6\textbackslash xb4F\textbackslash x02\textbackslash x00!\textbackslash x01\textbackslash x16\textbackslash x00\textbackslash x00\textbackslash x00t/\textbackslash xe5\textbackslash xa3\textbackslash x01\textbackslash x00\textbackslash \\ x05DAIICT\textbackslash x00\textbackslash x00\textbackslash x00r\textbackslash xb0\textbackslash xbe\textbackslash xcd\textbackslash xb6M\textbackslash x9b\textbackslash xaa\textbackslash x00\textbackslash x01\textbackslash x1e\textbackslash x06\textbackslash xc1/\textbackslash xa4\textbackslash x1d\textbackslash x1f\textbackslash xb6\textbackslash xf3\} \\ \textbackslash x01\textbackslash x00\textbackslash x00\textbackslash x00\textbackslash x00\textbackslash x04YZ'
+
+\subsection{Codebook}
+
+After following the procedure as mentioned in the algorithm we obtained the following codebook:
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{ |c|c| }
+ \hline
+ Codeword & Value \\
+ \hline
+ \hline
+ AGCG & 0 \\ 
+ CTAT & 1 \\
+ ATGA & 2 \\
+ TAGC & 3 \\
+ GATA & 4 \\
+ CGTC & 5 \\
+ TCTG & 6 \\
+ GCAC & 7 \\
+ \hline
+\end{tabular}
+\caption{Codebook}
+\end{center}
+\end{table}
+
+We get a different codebook each time we run the code. We will be using this codebook for the example.
+
+\subsection{Mapping and Storage}
+
+After base conversion of byte stream from base 256 to base 8 we get the following octal sequence. \\ \\
+\textbf{Output:} 0o3751567513026400000011633265504300200020401054000000007205771321401000025042024451 \\ 12065200000000162541373155544663352400001074033011372203507733363372004000000000001054532 \\
+
+This octal sequence is mapped to DNA sequence using the generated codebook. \\
+
+\textbf{Output:} TAGCGCACCGTCCTATCGTCTCTGGCACCGTCCTATTAGCAGCGATGATCTG \\ GATAAGCGAGCGAGCGAGCGAGCGAGCGCTATCTATTCTGTAGCTAGCATGATCTGCGTCCG \\ TCAGCGGATATAGCAGCGAGCGATGAAGCGAGCGAGCGATGAAGCGGATAAGCGCTATAGCG \\ CGTCGATAAGCGAGCGAGCGAGCGAGCGAGCGAGCGAGCGGCACATGAAGCGCGTCGCACGC \\ ACCTATTAGCATGACTATGATAAGCGCTATAGCGAGCGAGCGAGCGATGACGTCAGCGGATA \\ ATGAAGCGATGAGATAGATACGTCCTATCTATATGAAGCGTCTGCGTCATGAAGCGAGCGAG \\ CGAGCGAGCGAGCGAGCGAGCGCTATTCTGATGACGTCGATACTATTAGCGCACTAGCCTAT \\ CGTCCGTCCGTCGATAGATATCTGTCTGTAGCTAGCCGTCATGAGATAAGCGAGCGAGCGAG \\ CGCTATAGCGGCACGATAAGCGTAGCTAGCAGCGCTATCTATTAGCGCACATGAATGAAGCG \\ TAGCCGTCAGCGGCACGCACTAGCTAGCTAGCTCTGTAGCTAGCGCACATGAAGCGAGCGGA \\ TAAGCGAGCGAGCGAGCGAGCGAGCGAGCGAGCGAGCGAGCGAGCGCTATAGCGCGTCGATA \\ CGTCTAGCATGA
+\\
+
+This DNA sequence is stored in a file named example.txt\_DNA.txt
+
+\subsection{Error Introduction and Correction}
+
+The error introduced is random as described in the algorithm and this run letter 'A' was selected at random and the 4th letter of each block is replaced with this letter. DNA sequence with errors is as follows: \\
+
+\textbf{Output:} TAGAGCAACGTACTAACGTATCTAGCAACGTACTAATAGAAGCAATGATCTA \\ GATAAGCAAGCAAGCAAGCAAGCAAGCACTAACTAATCTATAGATAGAATGATCTACGTACG \\ TAAGCAGATATAGAAGCAAGCAATGAAGCAAGCAAGCAATGAAGCAGATAAGCACTAAAGCA \\ CGTAGATAAGCAAGCAAGCAAGCAAGCAAGCAAGCAAGCAGCAAATGAAGCACGTAGCAAGC \\ AACTAATAGAATGACTAAGATAAGCACTAAAGCAAGCAAGCAAGCAATGACGTAAGCAGATA \\ ATGAAGCAATGAGATAGATACGTACTAACTAAATGAAGCATCTACGTAATGAAGCAAGCAAG \\ CAAGCAAGCAAGCAAGCAAGCACTAATCTAATGACGTAGATACTAATAGAGCAATAGACTAA \\ CGTACGTACGTAGATAGATATCTATCTATAGATAGACGTAATGAGATAAGCAAGCAAGCAAG \\ CACTAAAGCAGCAAGATAAGCATAGATAGAAGCACTAACTAATAGAGCAAATGAATGAAGCA \\ TAGACGTAAGCAGCAAGCAATAGATAGATAGATCTATAGATAGAGCAAATGAAGCAAGCAGA \\ TAAGCAAGCAAGCAAGCAAGCAAGCAAGCAAGCAAGCAAGCAAGCACTAAAGCACGTAGATA \\ CGTATAGAATGA
+\\
+
+After this the errors are corrected using the procedure mentioned earlier and we get back the original DNA sequence.
+
+\subsection{Mapping and Conversion}
+
+The DNA sequence is converted to an integer sequence using the mapping present in the codebook. \\
+
+\textbf{Output:} 3751567513026400000011633265504300200020401054000000007205771321401000025042024451 \\ 12065200000000162541373155544663352400001074033011372203507733363372004000000000001054532
+\\
+
+It is converted to byte stream which is required for decompression. \\
+
+\textbf{Output:} b'\textbackslash xfd7zXZ\textbackslash x00\textbackslash x00\textbackslash x04\textbackslash xe6\textbackslash xd6\textbackslash xb4F\textbackslash x02\textbackslash x00!\textbackslash x01\textbackslash x16\textbackslash x00\textbackslash x00\textbackslash x00t/\textbackslash xe5\textbackslash xa3\textbackslash x01\textbackslash x00\textbackslash \\ x05DAIICT\textbackslash x00\textbackslash x00\textbackslash x00r\textbackslash xb0\textbackslash xbe\textbackslash xcd\textbackslash xb6M\textbackslash x9b\textbackslash xaa\textbackslash x00\textbackslash x01\textbackslash x1e\textbackslash x06\textbackslash xc1/\textbackslash xa4\textbackslash x1d\textbackslash x1f\textbackslash xb6\textbackslash xf3\} \\ \textbackslash x01\textbackslash x00\textbackslash x00\textbackslash x00\textbackslash x00\textbackslash x04YZ'
+\\ \\
+The data above are the contents of the file example.txt\_comp.xz
+
+\subsection{Decompression}
+
+The data stream is decompressed using LZMA compression algorithm. \\
+
+\textbf{Output:} b'DAIICT' \\
+
+This text is decoded using utf-8 and written to file example.txt\_decoded.txt \\
+
+\textbf{Output:} DAIICT
+
+\section{Results}
+
+In all the four files tested by us, we got 100\% accuracy in retrieving the information even after introducing errors. We carried out the simulations for the following input files:
+\begin{center}
+
+\begin{tabular}{ |c|c|c|c| }
+\hline
+Data & Size of file & Size of .xz file & Length of DNA\\
+\hline
+sym10.png & 10,297 bytes & 10,688 bytes & 114,008\\
+DAIICT.jpg & 14,109 bytes & 14,424 bytes & 153,856\\
+longSameText.txt & 10,000 bytes & 108 bytes & 1152\\
+longRandomText.txt & 10,000 bytes & 4,472 bytes & 47,704\\
+\hline
+\end{tabular}
+\end{center}
+
+We can observe that the length of the nucleotide sequence depends a lot on the lzma compression i.e. length of .xz file. For image files, the compression is not significant because of the small file size. However, for text files, the compression is quite significant. The flat file consisting of 10,000 zeros is compressed from 10,000 bytes to only 108 bytes! Moreover, the file consisting of random 10,000 characters is compressed to around 4500 bytes. 
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width = 5cm]{DAIICT.jpg} 
+    \caption{DAIICT.jpg}
+    \label{Fig: daiict logo}
+\end{figure}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width = 5cm]{sym10.png} 
+    \caption{sym10.png}
+    \label{Fig: sym 10}
+\end{figure}
+
+In the following table, we have presented the percentages of the 4 nucleotide types in the encoded files :
+
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c| }
+\hline
+Name of file & Percentage of A & Percentage of C & Percentage of G & Percentage of T\\
+\hline
+sym10.png & 31.3 & 19.9 & 21.8 & 28.0\\
+DAIICT.jpg & 25.2 & 24.8 & 25.2 & 24.8\\
+longSameText.txt & 22.5 & 29.3 & 23.1 & 25.1\\
+longRandomText.txt & 25.0 & 25.1 & 25.0 & 24.9\\
+
+\hline
+\end{tabular}
+\end{center}
+
+The DAIICT.jpg file and longRandomText.txt file give a uniform distribution of the 4 base pairs. Due to repetitiveness, the longSameText.txt shows some non-uniformity. We didn't find any plausible reason for the sym10.png file to give such non-uniform results. It may be due to the compression technique used.
+
+\section{Extensions}
+
+\begin{itemize}
+    \item We have introduced only one type of error - by substitution. Other error types like insertion and deletion can be introduced and error correction techniques need to be altered.
+    
+    \item Other file formats like pdf, gif, exe can be tested.
+    
+\end{itemize}
+% ========================================================================
+
+\begin{thebibliography}{}
+    
+    \bibitem{main_paper} Azat Akhmetov, Andrew Ellington, Edward Marcotte, “A highly parallel strategy for storage of digital information in living cells”, biorxiv.org/content/early/2016/12/26/096792, Dec 2016.
+    
+    \bibitem{daiict logo} https://img.collegepravesh.com/2014/06/DA-IICT.jpg
+    
+    \bibitem{sym 10} https://pbs.twimg.com/profile\_images/591032213166301185/jymVKEjM\_400x400.png
+
+
+\end{thebibliography}
+
+\end{document}
+
+
